@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+  {% block content %}
+    <h1 class="container NIKITA_align_horizontaly"> Main page starts here :) </h1>
+    <div class="list-group">
+    {% for question in questions %}
+       {% include 'inc/question.html' %}
+    {% endfor %}
+    </div>
+  {% endblock content %}

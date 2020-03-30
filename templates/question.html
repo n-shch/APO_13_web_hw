@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+          <h1 class="container NIKITA_align_horizontaly"> Jennifer asks.. </h1>
+<!--this is the question -->
+          <div class="row">
+            <div class="col-2.5">
+              <p><img src="{% static '/imgs/Jennifer-Connelly-post128.jpg' %}" class=" rounded-circle ml-2" alt="..."> </p>
+                 <div class="ml-4 mb-2 align-self-sm-center btn-group" role="group" aria-label="Basic example">
+                <button type="button" class="btn btn-sm">lit</button>
+                <button type="button" class="btn btn-sm">dump</button>
+              </div>
+            </div>
+            <div class="col">
+              <div class="d-flex w-100 justify-content-between">
+                <h4 class="mb-1"><a href="{% url 'question' qid=question.id %}"> {{ question.title }}</a> </h4>
+                <small class="text-muted">3 days ago</small>
+              </div>
+              <p class="mb-1">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
+              <small class="text-muted">Donec id elit non mi porta.</small>
+              <div>
+                <span >
+              TAGS:
+              <a href="#" class="">jennifer connelly</a>
+              <a href="#" class="">Kroshka Nick</a>
+              </span>
+              </div>
+            </div>
+          </div>
+
+
+
+<!--          that's the end -->
+<div class="list-group">
+
+    {% include 'inc/question.html' %}
+    {% include 'inc/question.html' %}
+    {% include 'inc/question.html' %}
+
+
+
+
+
+
+
+    <hr class="mt-1">
+    <div class="form-group mt-3">
+        <label for="exampleFormControlTextarea1"><h5 class="ml-4">what do u think? </h5>  </label>
+        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3">Please be polite, remember that reading bad things as unpleasant as hear them </textarea>
+        <button type="submit" class="mt-1 ml-1 btn">comment</button>
+    </div>
+</div>
+
+
+{% endblock content %}

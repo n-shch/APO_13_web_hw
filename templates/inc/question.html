@@ -1,0 +1,23 @@
+{% load static %}
+            <div class="card-body card">
+<!--              <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">-->
+                <div class="row">
+                  <div class="col-2.5">
+                    <p><img src="{% static '/imgs/Jennifer-Connelly-post64.jpg' %}" class=" rounded-circle ml-2" alt="..."> </p>
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                      <button type="button" class="btn btn-sm">lit</button>
+                      <button type="button" class="btn btn-sm">dump</button>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="d-flex w-100 justify-content-between">
+                      <a href="{% url 'question' qid=question.id %}"> {{ question.title }} </a>
+<!--                      <h5 class="mb-1" ></h5>-->
+                      <small class="text-muted">3 days ago</small>
+                    </div>
+                    <p class="mb-1">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
+                    <small class="text-muted">Donec id elit non mi porta.</small>
+                  </div>
+                </div>
+<!--              </a>-->
+            </div>

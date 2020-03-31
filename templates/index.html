@@ -6,5 +6,23 @@
     {% for question in questions %}
        {% include 'inc/question.html' %}
     {% endfor %}
+      <p> total: {{ questions|length }} </p>
+
+      <div class="pagination" style="color: lightpink">
+        <span class="step-links">
+            {% if questions.has_previous %}
+                <a href="?page={{ questions.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ questions.number }} of {{ questions.paginator.num_pages }}.
+            </span>
+
+            {% if questions.has_next %}
+                <a href="?page={{ questions.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+      </div>
+
     </div>
-  {% endblock content %}
+{% endblock content %}

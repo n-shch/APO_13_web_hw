@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
   {% block content %}
     <h1 class="container NIKITA_align_horizontaly"> Main page starts here :) </h1>
     <div class="list-group">
@@ -7,11 +6,10 @@
        {% include 'inc/question.html' %}
     {% endfor %}
       <p> total: {{ questions|length }} </p>
-
-      <div class="pagination" style="color: lightpink">
+      <div class="pagination" style="color: lightblue">
         <span class="step-links">
             {% if questions.has_previous %}
-                <a href="?page={{ questions.previous_page_number }}">previous</a>
+                <a href="?page={{ questions.previous_page_number }}" class="btn btn-sm btn-lg active" role="button" aria-pressed="true">previous</a>
             {% endif %}
 
             <span class="current">
@@ -19,10 +17,9 @@
             </span>
 
             {% if questions.has_next %}
-                <a href="?page={{ questions.next_page_number }}">next</a>
+            <a href="?page={{ questions.next_page_number }}" class="btn btn-sm btn-lg active" role="button" aria-pressed="true">next</a>
             {% endif %}
         </span>
       </div>
-
     </div>
 {% endblock content %}

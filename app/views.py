@@ -3,6 +3,12 @@ from django.shortcuts import render
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
 
+QUESTIONS = {
+    '1': {'id': 1, 'title': 'I`m your dream', 'text': 'I`m your dream, make you real'},
+    '2': {'id': 2, 'title': 'I`m your eyes', 'text': 'I`m your eyes when you must steal'},
+    '3': {'id': 3, 'title': 'I`m your pain', 'text': 'I`m your pain when you can`t feel'},
+}
+
 tags_list = ['fish',
  'fashion',
   'covid-19',
@@ -18,6 +24,25 @@ questions = {
     i: {'id': i, 'title': f'question # {i}'}
     for i in range(10)
 }
+
+def index(request):
+    contact_list = questions.values()
+    CL = list(contact_list)
+    paginator = Paginator(CL, 5)
+    page_number = request.GET.get('page')
+#
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        # В случае, GET параметр не число
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+    print("hello there")
+    return render(request, 'index.html', {
+        'questions': page_obj,
+    })
+
 
 def listing(request):
     contact_list = Contact.objects.all()
@@ -35,11 +60,7 @@ def tag(request, tid):
     'questions': questions.values(),
     })
 
-def index(request):
-    print("hello there")
-    return render(request, 'index.html', {
-        'questions': questions.values(),
-    })
+
 # Create your views here.
 
 def login(request):

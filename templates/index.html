@@ -5,7 +5,8 @@
     {% for question in questions %}
        {% include 'inc/question.html' %}
     {% endfor %}
-      <p> total: {{ questions|length }} </p>
+      <p> </p>
+<!--      <p> total: {{ questions|length }} </p>-->
       <div class="pagination" style="color: lightblue">
         <span class="step-links">
             {% if questions.has_previous %}

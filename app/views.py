@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from .models import Question
 
 
 QUESTIONS = {
@@ -26,8 +27,10 @@ questions = {
 }
 
 def index(request):
+    latest_question_list = Question.objects.all()
+    output =', '.join([q.question_author.username for q in latest_question_list])
     contact_list = questions.values()
-    CL = list(contact_list)
+    CL = list(latest_question_list)
     paginator = Paginator(CL, 5)
     page_number = request.GET.get('page')
 #
@@ -39,6 +42,8 @@ def index(request):
     except EmptyPage:
         page_obj = paginator.get_page(paginator.num_pages)
     print("hello there")
+#     return HttpResponse((questions.values()))
+#     return HttpResponse(latest_question_list[1].question_author)
     return render(request, 'index.html', {
         'questions': page_obj,
     })
@@ -54,10 +59,27 @@ def listing(request):
 
 
 def tag(request, tid):
+
+    latest_question_list = Question.objects.all()
+    output =', '.join([q.question_author.username for q in latest_question_list])
+    contact_list = questions.values()
+    CL = list(latest_question_list)
+    paginator = Paginator(CL, 5)
+    page_number = request.GET.get('page')
+#
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        # В случае, GET параметр не число
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
     print("hello there")
+#     return HttpResponse((questions.values()))
+#     return HttpResponse(latest_question_list[1].question_author)
     return render(request, 'tag.html', {
-    'tag' : tid,
-    'questions': questions.values(),
+        'tag' : tid,
+        'questions': page_obj,
     })
 
 
@@ -69,7 +91,7 @@ def login(request):
 
 
 def question(request, qid):
-    question = questions.get(qid)
+    question = Question.objects.get(pk = qid)
     return render(request, 'question.html', {
         'question': question
     })

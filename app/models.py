@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
 import _datetime
+
+from django.db.models import Sum
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import User
@@ -22,54 +24,48 @@ class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='profile', unique=True, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=30, unique=True)
     avatar = models.ImageField(upload_to='uploads', default= None)
-
     def __str__(self):
-            return self.nickname
+        return self.nickname
 
 class Tag(models.Model):
     tag_title = models.CharField(max_length=20, unique=True)
     def __str__(self):
-            return self.tag_title
+        return self.tag_title
 
     def get_tags(self):
         tags_list = Tag.objects.all()[:10]
 
 
-class LikeManager(models.Manager):
-    def add_like(self, author, content_object, is_positive):
-        rating_delta = 1 if is_positive else (-1)
-        likes = content_object.likes.filter(author=author)
-        if not likes:
-            self.create(author=author, content_object=content_object, is_positive=is_positive)
-        elif not likes.filter(is_positive=is_positive).exists():
-            # Flip sign
-            likes.update(is_positive=is_positive)
-            rating_delta *= 2
-        else:
-            # Like has already been set
-            rating_delta = 0
+class LikeDislikeManager(models.Manager):
+    use_for_related_fields = True
 
-        if rating_delta:
-            content_object.author.reputation += rating_delta
-            content_object.author.save()
-            content_object.rating += rating_delta
-            content_object.save()
+    def likes(self):
+        return self.get_queryset().filter(vote__gt=0)
+
+    def dislikes(self):
+        return self.get_queryset().filter(vote__lt=0)
+
+    def sum_rating(self):
+        return self.get_queryset().aggregate(Sum('vote')).get('vote__sum') or 0
 
 
+class LikeDislike(models.Model):
+    LIKE = 1
+    DISLIKE = -1
 
+    VOTES = (
+        (DISLIKE, 'Dislike'),
+        (LIKE, 'Like')
+    )
 
-class Like(models.Model):
+    vote = models.SmallIntegerField(verbose_name="Голос", choices=VOTES)
+    user = models.ForeignKey(Profile, verbose_name="Пользователь", on_delete=models.CASCADE)
+
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField(db_index=True)
-    content_object = GenericForeignKey('content_type', 'object_id')
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey()
+    objects = LikeDislikeManager()
 
-    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    is_positive = models.BooleanField(default=True)
-
-    objects = LikeManager()
-
-    def __str__(self):
-        return f'#{self.object_id} {self.author} ({self.is_positive})'
 
 class QuestionManager(models.Manager):
     def get_new(self):
@@ -104,7 +100,7 @@ class Question(models.Model):
     is_active = models.BooleanField(default=True, verbose_name=u"Доступность вопроса")
 
     tags = models.ManyToManyField(Tag, blank=True)
-    likes = GenericRelation(Like, related_query_name='question')
+    likes = GenericRelation(LikeDislike, related_query_name='question')
 
     rating = models.IntegerField(default=0, db_index=True)
 

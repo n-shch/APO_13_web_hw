@@ -2,11 +2,12 @@
   {% block content %}
     <h1 class="container NIKITA_align_horizontaly"> Main page starts here :) </h1>
     <div class="list-group">
+
     {% for question in questions %}
        {% include 'inc/question.html' %}
     {% endfor %}
-      <p> </p>
-<!--      <p> total: {{ questions|length }} </p>-->
+
+
       <div class="pagination" style="color: lightblue">
         <span class="step-links">
             {% if questions.has_previous %}

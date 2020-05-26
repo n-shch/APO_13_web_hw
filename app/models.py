@@ -3,9 +3,12 @@ from __future__ import unicode_literals
 import _datetime
 from django.utils import timezone
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
 from django.conf import settings
-
+from os import path
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError, FieldError
 
 """  Создать модели для основных сущностей:
 вопрос + , ответ +, тег+, профиль пользователя+,
@@ -15,33 +18,120 @@ from django.conf import settings
 # каждому вопросу соответсвуте свой вопрос
 # юзаем онделит при внешних ссылках
 
-class User(AbstractUser):
-    pass
+class Profile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='profile', unique=True, on_delete=models.CASCADE)
+    nickname = models.CharField(max_length=30, unique=True)
+    avatar = models.ImageField(upload_to='uploads', default= None)
+
+    def __str__(self):
+            return self.nickname
 
 class Tag(models.Model):
-    tag_title = models.CharField(max_length=50)
+    tag_title = models.CharField(max_length=20, unique=True)
     def __str__(self):
             return self.tag_title
 
+    def get_tags(self):
+        tags_list = Tag.objects.all()[:10]
+
+
+class LikeManager(models.Manager):
+    def add_like(self, author, content_object, is_positive):
+        rating_delta = 1 if is_positive else (-1)
+        likes = content_object.likes.filter(author=author)
+        if not likes:
+            self.create(author=author, content_object=content_object, is_positive=is_positive)
+        elif not likes.filter(is_positive=is_positive).exists():
+            # Flip sign
+            likes.update(is_positive=is_positive)
+            rating_delta *= 2
+        else:
+            # Like has already been set
+            rating_delta = 0
+
+        if rating_delta:
+            content_object.author.reputation += rating_delta
+            content_object.author.save()
+            content_object.rating += rating_delta
+            content_object.save()
+
+
+
+
+class Like(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField(db_index=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    is_positive = models.BooleanField(default=True)
+
+    objects = LikeManager()
+
+    def __str__(self):
+        return f'#{self.object_id} {self.author} ({self.is_positive})'
+
+class QuestionManager(models.Manager):
+    def get_new(self):
+        return self.order_by('-pub_date')
+
+    def hot(self):
+        return self.order_by('-rating')
+
+    def get_tagged(self, tag_name):
+        return self.filter(tags__name=tag_name)
+
+    def get_comments(self):
+        comment_list = list(self.comment_set.all())
+        return comment_list
+
+    def get_tags(self):
+        tags_list = list(self.related.all())
+        return tags_list
+
+    def create_question(self, author, title, text, tag_names):
+        q = self.create(question_author=author,
+                        question_title=title,
+                        question_text=text)
+        q.add_tags(tag_names)
+        return q
+
 class Question(models.Model):
-    question_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    question_title = models.CharField(max_length=50)
-    question_text = models.CharField(max_length=200)
+    question_author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    question_title = models.CharField(max_length=140)
+    question_text = models.CharField(max_length=1000)
     pub_date = models.DateTimeField(default=timezone.now, verbose_name=u'date published')
     is_active = models.BooleanField(default=True, verbose_name=u"Доступность вопроса")
-    tags = models.ManyToManyField(Tag)
+
+    tags = models.ManyToManyField(Tag, blank=True)
+    likes = GenericRelation(Like, related_query_name='question')
+
+    rating = models.IntegerField(default=0, db_index=True)
 
     def __str__(self):
         return self.question_text
 
+    def add_tags(self, tag_names):
+        for name in tag_names:
+            self.tags.add(Tag.objects.get_or_create(tag_title=name)[0])
+        self.save()
+
     def was_published_recently(self):
         return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
 
+    objects = QuestionManager()
+
 # модель комментария
 class Comment(models.Model):
-    comment_author = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment_author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    comment_text = models.CharField(max_length=200)
+    comment_text = models.CharField(max_length=1000)
     pub_date = models.DateTimeField(default=timezone.now, verbose_name=u'date published')
+
+    is_open = models.BooleanField(default=True)
+
     def __str__(self):
         return self.comment_text
+
+
+

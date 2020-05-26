@@ -7,10 +7,12 @@
               <!--            <img class="card-img-top" src="static/imgs/Jennifer-Connelly-post128.jpg" alt="Card image cap">-->
               <div class="card-body">
                 <h5 class="card-title">POPULAR AMONG OTHER ZOOMERS</h5>
-                <p>d title and make up the bulk of the card's content.</p>
-                <a href="{% url 'tag' 'oil' %}" class="btn-light btn-sm">Oil</a>
-                <a href="{% url 'tag' 'swag' %}" class="btn-light btn-sm">SWAG</a>
-                <a href="{% url 'tag' 'new_shoes' %}" class="btn-light btn-sm">new_shoes</a>
+                <p>Check it out!)</p>
+
+                {% for tag in tags %}
+                   <a href="{% url 'tag' tid=tag.tag_title %}" class="btn-light btn-sm"> {{tag.tag_title}} </a>
+                {% endfor %}
+
               </div>
             </div>
           </div>

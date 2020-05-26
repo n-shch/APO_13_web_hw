@@ -5,7 +5,7 @@
                   <div class="col-2.5">
                     <p><img src="{% static '/imgs/Jennifer-Connelly-post64.jpg' %}" class=" rounded-circle ml-2" alt="..."> </p>
                     <div class="btn-group" role="group" aria-label="Basic example">
-                      <button type="button" class="btn btn-sm">lit</button>
+                        <button type="button" class="btn btn-sm">lit</button> <a class="mt-1">{{ question.rating }}</a>
                       <button type="button" class="btn btn-sm">dump</button>
                     </div>
                   </div>
@@ -15,8 +15,9 @@
 <!--                      <h5 class="mb-1" ></h5>-->
                       <small class="text-muted">3 days ago</small>
                     </div>
-                    <p class="mb-1"> {{ question.question_text }}} </p>
-                    <small class="text-muted"> {{ question.pub_date}}</small>
+                    <p class="mb-1"> {{ question.question_text }} </p>
+                    <small class="text-muted"> {{ question.pub_date}}</small><br/>
+
                   </div>
                 </div>
 <!--              </a>-->

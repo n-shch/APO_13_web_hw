@@ -1,35 +1,26 @@
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpRequest
-from django.shortcuts import render
+from django.contrib import auth
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from .models import Question
+
+from .forms import SignupForm
+from .models import *
+from app import forms, models
 
 
-QUESTIONS = {
-    '1': {'id': 1, 'title': 'I`m your dream', 'text': 'I`m your dream, make you real'},
-    '2': {'id': 2, 'title': 'I`m your eyes', 'text': 'I`m your eyes when you must steal'},
-    '3': {'id': 3, 'title': 'I`m your pain', 'text': 'I`m your pain when you can`t feel'},
+
+
+context = {
+    'best_users': Profile.objects.all(),
+    'hot_tags': Tag.objects.all(),
 }
 
-tags_list = ['fish',
- 'fashion',
-  'covid-19',
-   'how much does place in cemetery cost',
-   ]
 
-tags = {
-    i: {'id': tags_list[i]}
-    for i in range(4)
-}
-
-questions = {
-    i: {'id': i, 'title': f'question # {i}'}
-    for i in range(10)
-}
 
 def index(request):
+    tag_list = Tag.objects.all()[:10]
     latest_question_list = Question.objects.all()
-    output =', '.join([q.question_author.username for q in latest_question_list])
-    contact_list = questions.values()
     CL = list(latest_question_list)
     paginator = Paginator(CL, 5)
     page_number = request.GET.get('page')
@@ -42,27 +33,59 @@ def index(request):
     except EmptyPage:
         page_obj = paginator.get_page(paginator.num_pages)
     print("hello there")
-#     return HttpResponse((questions.values()))
-#     return HttpResponse(latest_question_list[1].question_author)
     return render(request, 'index.html', {
+        'tags': tag_list,
         'questions': page_obj,
     })
 
 
-def listing(request):
-    contact_list = Contact.objects.all()
-    paginator = Paginator(contact_list, 25) # Show 25 contacts per page.
 
+def hot(request):
+    tag_list = Tag.objects.all()[:10]
+    hot_questions = Question.objects.hot()
+    CL = list(hot_questions)
+    paginator = Paginator(CL, 5)
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return render(request, 'paginator.html', {'page_obj': page_obj})
+
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+    print("hello there")
+    return render(request, 'index.html', {
+        'tags': tag_list,
+        'questions': page_obj,
+    })
+
+
+def fresh(request):
+    tag_list = Tag.objects.all()[:10]
+    fresh_question = Question.objects.get_new()
+    CL = list(fresh_question)
+    paginator = Paginator(CL, 5)
+    page_number = request.GET.get('page')
+
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+    print("hello there")
+    return render(request, 'index.html', {
+        'tags': tag_list,
+        'questions': page_obj,
+    })
+
+
 
 
 def tag(request, tid):
-
-    latest_question_list = Question.objects.all()
-    output =', '.join([q.question_author.username for q in latest_question_list])
-    contact_list = questions.values()
+    tag_list = Tag.objects.all()[:10]
+    tag = Tag.objects.get(tag_title=tid)
+    latest_question_list = tag.question_set.all()
     CL = list(latest_question_list)
     paginator = Paginator(CL, 5)
     page_number = request.GET.get('page')
@@ -75,48 +98,123 @@ def tag(request, tid):
     except EmptyPage:
         page_obj = paginator.get_page(paginator.num_pages)
     print("hello there")
-#     return HttpResponse((questions.values()))
-#     return HttpResponse(latest_question_list[1].question_author)
     return render(request, 'tag.html', {
-        'tag' : tid,
+        'tag': tid,
         'questions': page_obj,
+        'tags': tag_list,
     })
 
 
-# Create your views here.
 
 def login(request):
-    print("hello there")
-    return render(request, 'login.html', {})
+    if request.method == 'GET':
+        form = forms.LoginForm()
+    else:
+        form = forms.LoginForm(data=request.POST)
+        print(form.errors)
+        print(form.cleaned_data)
+        if form.is_valid():
+            user = auth.authenticate(request, **form.cleaned_data)
+            if user is not None:
+                print(user.username)
+                auth.login(request, user)
+                print("залогировался")
+                return redirect(request.META.get('HTTP_REFERER'))
+    ctx = {'form': form}
+    return render(request, 'login.html', ctx)
+
 
 
 def question(request, qid):
+    tag_list_all = Tag.objects.all()[:10]
     question = Question.objects.get(pk = qid)
+    comments_list = list(question.comment_set.all())
+    CL = list(comments_list)
+    paginator = Paginator(CL, 5)
+    page_number = request.GET.get('page')
+    tag_list = question.tags.all()[:5]
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
     return render(request, 'question.html', {
-        'question': question
+    'question': question,
+    'comments': page_obj,
+    'question_tags' : tag_list,
+    'tags': tag_list_all,
     })
 
-def ask(request):
-    print("hello there")
-    return render(request, 'ask.html', {})
 
-# that's where u start to do hw
-def main(request):
-    print("hello there")
-    return render(request, 'index.html', {
-        'questions': questions.values(),
-    })
-
-def hot(request):
-    print("hello there")
-    return render(request, 'index.html', {
-    'questions': questions.values(),
-    })
 
 def signup(request):
-    print("hello there")
-    return render(request, 'signup.html', {})
+    if request.method == "GET":
+        form = forms.SignupForm()
+        rendered_data = {'form': form}
+        return render(request, 'signup.html', rendered_data)
 
+    if request.method == "POST":
+        form = forms.SignupForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            user = form.save()
+            auth.login(request, user=user)
+            return redirect('/')
+
+        rendered_data = {'form': form}
+        return render(request, 'signup.html', rendered_data)
+
+
+@login_required
+def log_out(request):
+    auth.logout(request)
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+
+
+@login_required
 def ask(request):
-    print("hellow world")
-    return render(request, 'ask.html', {})
+    if request.method == 'POST':
+        author, created = models.Profile.objects.get_or_create(nickname=request.user.username)
+        form = forms.QuestionForm(profile=author, data=request.POST)
+        if form.is_valid():
+            question = form.save(request.user.profile)
+            return redirect(reverse('question', kwargs={'qid': question.pk}))
+    else:
+        form = forms.QuestionForm(request.POST)
+    context['form'] = form
+    return render(request, 'ask.html', context)
+
+@login_required
+def comment(request):
+    if request.method == 'POST':
+        author, created = models.Profile.objects.get_or_create(nickname=request.user.username)
+        form = forms.CommentForm(profile=author, data=request.POST)
+        if form.is_valid():
+            comment = form.save(request.user.profile)
+            return redirect(reverse('question', kwargs={'qid': question.pk}))
+    else:
+        form = forms.QuestionForm(request.POST)
+    context['form'] = form
+    return render(request, 'ask.html', context)
+
+
+
+@login_required
+def settings(request):
+    if request.method == "GET":
+        form = forms.SettingsForm()
+        rendered_data = {'form': form}
+        return render(request, 'settings.html', rendered_data)
+    if request.method == "POST":
+        form = forms.SettingsForm(data=request.POST,
+                                  files=request.FILES,
+                                  instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('/')
+        rendered_data = {'form': form}
+        return render(request, 'settings.html', rendered_data)
+

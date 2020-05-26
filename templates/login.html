@@ -1,5 +1,51 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load bootstrap4 %}
+
 {% block content %}
-  {% include 'inc/login_form.html' %}
+             <h1 class="container NIKITA_align_horizontaly"> log in :) </h1>
+          <form>
+            <div class="form-group mt-3">
+              <label for="exampleFormControlTextarea1"><h5 class="ml-4">Glad to see u back</h5>  </label>
+            </div>
+          </form>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <form action="/login/" method="POST" enctype="" >
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                  {% buttons %}
+                  <button type="submit" class="btn btn-primary">Login</button>
+                {% endbuttons %}
+              </form>
+
+              <style>
+                .al_hor {
+                  width: 80%;
+                  margin: 0 auto;
+                  padding: 20px;
+                }
+              </style>
+              <style>
+                .al_hor_out_pad {
+                  width: 80%;
+                  margin: 0 auto;
+                }
+              </style>
+
+
+              <style>
+                .label_hor {
+                  display: block;
+                  text-align: center;
+                  line-height: 150%;
+                }
+              </style>
+            </div>
+            <div class="form-group col-md-6">
+              <div class="al_hor row align-items-center form-group col-md-6 ">
+                <img src="{% static '/imgs/ghost128.jpg' %}" class="rounded-circle" alt="ur pic :)">
+              </div>
+            </div>
+          </div>
 {% endblock content %}

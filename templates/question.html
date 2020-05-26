@@ -3,9 +3,26 @@
 {% block content %}
 {% include 'inc/question_expand.html' %}
 <div class="list-group">
-    {% include 'inc/question.html' %}
-    {% include 'inc/question.html' %}
-    {% include 'inc/question.html' %}
+    {% for comment in comments %}
+        {% include 'inc/comment.html' %}
+    {% endfor %}
+    <div class="pagination" style="color: lightblue">
+        <span class="step-links">
+            {% if comments.has_previous %}
+                <a href="?page={{ questions.previous_page_number }}" class="btn btn-sm btn-lg active" role="button" aria-pressed="true">previous</a>
+            {% endif %}
+
+
+
+            <span class="current">
+                Page {{ comments.number }} of {{ comments.paginator.num_pages }}.
+            </span>
+
+            {% if comments.has_next %}
+            <a href="?page={{ questions.next_page_number }}" class="btn btn-sm btn-lg active" role="button" aria-pressed="true">next</a>
+            {% endif %}
+        </span>
+      </div>
     {% include 'inc/comment_form.html' %}
 </div>
 {% endblock content %}

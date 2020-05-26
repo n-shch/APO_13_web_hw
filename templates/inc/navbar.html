@@ -6,14 +6,28 @@
     <form class="form-inline mt-2 mt-md-0">
       <input class="form-control mr-sm-2" type="text" placeholder="Looking for some zoomers" aria-label="GIG">
       <button  class="btn btn-outline-success my-2 my-sm-0" type="submit" >Giggle</button>
+        <a href="{% url 'ask' %}" class="ml-2 btn btn-outline-success my-2 my-sm-0" role="button" aria-pressed="true">Ask</a>
+
     </form>
       </div>
       <div class="media">
-        <img src="{% static '/imgs/Jennifer-Connelly-post48.jpg' %}" class="rounded-circle" class="mr-3" alt="ur pic :)">
-        <div class="media-body">
-          <p class="NIKITA_your_name"> @your_name</p>
-          <a href="{% url 'ask' %}" class="btn btn-sm btn-lg active" role="button" aria-pressed="true">profile</a>
-          <a href="{% url 'login' %}" class="btn btn-sm btn-lg active" role="button" aria-pressed="true">log out</a>
-         </div>
+            {% if user.is_authenticated %}
+                <img src="{% static '/imgs/Jennifer-Connelly-post48.jpg' %}" class="rounded-circle" class="mr-3" alt="ur pic :)">
+                <div class="media-body">
+                <p class="NIKITA_your_name"> @{{user.username}}</p>
+                <a href="{% url 'settings' %}" class="btn btn-sm btn-lg active" role="button" aria-pressed="true">profile</a>
+                <a href="{% url 'logout' %}?continue={{ request.path|urlencode }}" class="btn btn-sm btn-lg active" role="button" aria-pressed="true">log out</a>
+                </div>
+            {% else %}
+      <div class="media-body">
+        <a href="{% url 'login' %}" class="btn btn-sm btn-lg active" role="button" aria-pressed="true">log in</a>
+        <a href="{% url 'signup' %}" class="btn btn-sm btn-lg active" role="button" aria-pressed="true">sign up</a>
+      </div>
+            {% endif %}
       </div>
     </nav>
+
+
+
+
+

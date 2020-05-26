@@ -1,7 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block content %}
+{% load bootstrap4 %}
 
-{% include 'inc/new_question_form.html' %}
+{% block content %}
+<h1 class="container NIKITA_align_horizontaly"> new question :) </h1>
+<form action="/ask/" method="POST" enctype="">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                  {% buttons %}
+                  <button type="submit" class="btn btn-primary">Ask</button>
+                {% endbuttons %}
+</form>
+
 
 {% endblock content %}
